@@ -1,5 +1,7 @@
-#include <time.h>
+#include <wait.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <time.h>
 #include <stdlib.h>
 #include <signal.h>
 
@@ -8,6 +10,10 @@
 #include <EGL/egl.h>
 #include <EGL/eglvivante.h>
 
+
+#ifdef INITROOT_STARTUP
+#include <initroot_startup.h>
+#endif
 
 #ifdef DrawTriangle
 
@@ -217,7 +223,7 @@ int egl_deinitialize(struct egl_device *device)
 }
 
 
-int main(int argc, char *argv[])
+int server_main(int argc, char *argv[])
 {
     int display_width;
     int display_height;
@@ -239,5 +245,45 @@ int main(int argc, char *argv[])
     eglSwapBuffers(device.display, device.surface);
     egl_deinitialize(&device);
 
+    // don't return, just loop
+    for (;;);
+
     return 0;
+}
+
+
+#ifdef INITROOT_STARTUP
+int startup_pre_end(void) { return 0; }
+#endif
+
+int main(int argc, char *argv[])
+{
+    pid_t pid = -1;
+    unsigned continue_loop = 1;
+
+#ifdef INITROOT_STARTUP
+    startup_begin();
+    startup_cend(startup_pre_end);
+#endif
+
+    do {
+        if (0 == (pid = fork())) {
+            return server_main(argc, argv);
+        }
+        else if (pid > 0) {
+            int status;
+            wait(&status);
+            fprintf(stdout, "server_main exit with status: %d\n", status);
+        }
+        else {
+            fprintf(stdout, "main fork server fail: %d\n", pid);
+            break;
+        }
+    } while (continue_loop);
+
+#ifndef INITROOT_STARTUP
+    return 0;
+#else
+    return startup_end(0);
+#endif
 }

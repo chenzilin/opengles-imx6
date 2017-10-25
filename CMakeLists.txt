@@ -9,6 +9,7 @@ set (SRC_VERSION_PATCH 1)
 set (SRC_VERSION ${SRC_VERSION_MAJOR}.${SRC_VERSION_MINOR}.${SRC_VERSION_PATCH})
 set (PROJECT_VERSION "${SRC_VERSION}")
 
+
 add_definitions(-DLINUX)
 add_definitions(-DEGL_API_FB)
 
@@ -16,5 +17,8 @@ add_definitions(-DDrawTriangle)
 
 target_link_libraries(opengles-imx6 EGL)
 target_link_libraries(opengles-imx6 GLESv2)
+
+add_definitions(-DINITROOT_STARTUP)
+target_link_libraries(opengles-imx6 initroot_startup)
 
 install(TARGETS opengles-imx6 DESTINATION bin)
