@@ -1,4 +1,6 @@
-	example for draw color to imx6 framebuffer by opengl es.
+
+
+	example for draw color to imx6 framebuffer by OpenGLES.
 
 
 	cmake . && make
